@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Digital Detox"
+version = "1.0.0"
+id = "artifacts/detox-app"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 20591
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/detox-app run dev"
+
+[services.env]
+PORT = "20591"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/detox-app", "run", "build"]
+publicDir = "artifacts/detox-app/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

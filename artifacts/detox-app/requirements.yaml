@@ -1,0 +1,14 @@
+packages:
+  "framer-motion": "Smooth lock screen animations and countdowns"
+  "date-fns": "Formatting lock times and delays"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes safely"
+
+images:
+  - path: "artifacts/detox-app/public/images/serene-bg.png"
+    description: "A dark, calm, serene abstract mesh gradient in deep navy and soft teal, minimal, wellness-oriented, smooth glassmorphism style"
+    aspect_ratio: "16:9"
+
+notes:
+  - Using generated React Query hooks from @workspace/api-client-react
+  - Lock screen is an app-wide overlay that mounts conditionally when lock state is true

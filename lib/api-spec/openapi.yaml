@@ -1,15 +1,20 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Digital Detox App API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: questions
+    description: Custom questions management
+  - name: settings
+    description: App settings
+  - name: progress
+    description: Answer progress tracking
 paths:
   /healthz:
     get:
@@ -24,6 +29,176 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /questions:
+    get:
+      operationId: getQuestions
+      tags: [questions]
+      summary: Get all custom questions
+      responses:
+        "200":
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+    post:
+      operationId: createQuestion
+      tags: [questions]
+      summary: Create a new question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionRequest"
+      responses:
+        "201":
+          description: Created question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+
+  /questions/{id}:
+    put:
+      operationId: updateQuestion
+      tags: [questions]
+      summary: Update a question
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestionRequest"
+      responses:
+        "200":
+          description: Updated question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+    delete:
+      operationId: deleteQuestion
+      tags: [questions]
+      summary: Delete a question
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get app settings
+      responses:
+        "200":
+          description: Settings object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update app settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsRequest"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+  /progress:
+    get:
+      operationId: getProgress
+      tags: [progress]
+      summary: Get saved answer progress
+      responses:
+        "200":
+          description: List of saved answers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnswerProgress"
+    post:
+      operationId: saveAnswer
+      tags: [progress]
+      summary: Save or update an answer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAnswerRequest"
+      responses:
+        "200":
+          description: Saved answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnswerProgress"
+    delete:
+      operationId: resetProgress
+      tags: [progress]
+      summary: Reset all saved progress
+      responses:
+        "204":
+          description: Progress reset
+
+  /lock:
+    get:
+      operationId: getLockState
+      tags: [settings]
+      summary: Get current lock state
+      responses:
+        "200":
+          description: Lock state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LockState"
+    post:
+      operationId: setLockState
+      tags: [settings]
+      summary: Lock or unlock the screen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetLockStateRequest"
+      responses:
+        "200":
+          description: Updated lock state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LockState"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +209,111 @@ components:
       required:
         - status
 
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - question
+        - answer
+        - createdAt
+
+    CreateQuestionRequest:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+      required:
+        - question
+        - answer
+
+    Settings:
+      type: object
+      properties:
+        id:
+          type: integer
+        questionCount:
+          type: integer
+          description: Number of questions required to unlock
+        emergencyDelayMinutes:
+          type: integer
+          description: Emergency bypass delay in minutes (2, 3, or 5)
+      required:
+        - id
+        - questionCount
+        - emergencyDelayMinutes
+
+    UpdateSettingsRequest:
+      type: object
+      properties:
+        questionCount:
+          type: integer
+        emergencyDelayMinutes:
+          type: integer
+
+    AnswerProgress:
+      type: object
+      properties:
+        id:
+          type: integer
+        questionId:
+          type: integer
+        answeredCorrectly:
+          type: boolean
+        answeredAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - questionId
+        - answeredCorrectly
+        - answeredAt
+
+    SaveAnswerRequest:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        answeredCorrectly:
+          type: boolean
+      required:
+        - questionId
+        - answeredCorrectly
+
+    LockState:
+      type: object
+      properties:
+        isLocked:
+          type: boolean
+        lockedAt:
+          type: string
+          format: date-time
+          nullable: true
+        emergencyUnlockAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - isLocked
+
+    SetLockStateRequest:
+      type: object
+      properties:
+        isLocked:
+          type: boolean
+        emergencyDelayMinutes:
+          type: integer
+          nullable: true
+      required:
+        - isLocked
