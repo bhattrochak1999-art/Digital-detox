@@ -36,11 +36,14 @@ router.post("/lock", async (req, res) => {
     emergencyUnlockAt: null,
   };
 
-  if (body.isLocked === false && body.emergencyDelayMinutes) {
+  // An emergency unlock request keeps the screen locked and starts the
+  // mandatory wait; the original lock time is preserved.
+  if (state.isLocked && body.emergencyDelayMinutes) {
     const unlockAt = new Date();
     unlockAt.setMinutes(unlockAt.getMinutes() + body.emergencyDelayMinutes);
     updates.emergencyUnlockAt = unlockAt;
     updates.isLocked = true;
+    updates.lockedAt = state.lockedAt;
   }
 
   const [updated] = await db

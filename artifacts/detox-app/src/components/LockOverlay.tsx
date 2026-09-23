@@ -46,6 +46,8 @@ export function LockOverlay() {
       
       return () => clearInterval(interval);
     }
+
+    return undefined;
   }, [lockState?.isLocked, lockState?.emergencyUnlockAt]);
 
   const handleRequestEmergency = () => {
@@ -63,7 +65,9 @@ export function LockOverlay() {
   }, [progress]);
 
   const correctlyAnsweredCount = answeredQuestionIds.length;
-  const questionsRequired = settings?.questionCount || 0;
+  // Never require more correct answers than there are questions, otherwise
+  // the user runs out of questions and can never unlock.
+  const questionsRequired = Math.min(settings?.questionCount || 0, questions?.length || 0);
   
   const currentQuestion = useMemo(() => {
     if (!questions) return null;
@@ -216,7 +220,7 @@ export function LockOverlay() {
                 <div className="absolute top-0 left-0 w-full h-1 bg-secondary">
                   <div 
                     className="h-full bg-primary transition-all duration-500 ease-out"
-                    style={{ width: `${Math.max(5, (correctlyAnsweredCount / questionsRequired) * 100)}%` }}
+                    style={{ width: `${Math.max(5, questionsRequired > 0 ? (correctlyAnsweredCount / questionsRequired) * 100 : 100)}%` }}
                   />
                 </div>
                 
@@ -235,6 +239,18 @@ export function LockOverlay() {
                      <p className="text-muted-foreground mb-6">No custom questions configured.</p>
                      <button
                         onClick={handleFreeUnlock}
+                        className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold w-full"
+                      >
+                        Unlock Now
+                      </button>
+                   </div>
+                ) : questions && correctlyAnsweredCount >= questionsRequired ? (
+                   <div className="py-8 text-center">
+                     <ShieldCheck className="w-16 h-16 text-primary mb-4 mx-auto" />
+                     <p className="text-muted-foreground mb-6">Challenge complete.</p>
+                     <button
+                        onClick={handleFreeUnlock}
+                        disabled={setLock.isPending}
                         className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold w-full"
                       >
                         Unlock Now
