@@ -8,6 +8,7 @@ import {
 export function useLockState() {
   return useGetLockState({
     query: {
+      queryKey: getGetLockStateQueryKey(),
       refetchInterval: 5000, // Poll every 5s to keep lock state in sync
     }
   });
